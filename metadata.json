@@ -1,0 +1,6 @@
+{
+  "name": "Sardhan Chain (SDR) Protocol Portal",
+  "description": "Technical specification, hybrid PoW/PoS consensus architecture, security threat model, and tokenomics review portal for the Sardhan Chain Layer-1 blockchain.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

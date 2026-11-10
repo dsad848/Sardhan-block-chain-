@@ -1,0 +1,16 @@
+[package]
+name = "sdr-rpc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdr-crypto = { path = "../sdr-crypto" }
+sdr-primitives = { path = "../sdr-primitives" }
+sdr-ledger = { path = "../sdr-ledger" }
+sdr-mempool = { path = "../sdr-mempool" }
+sdr-consensus = { path = "../sdr-consensus" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+hex.workspace = true

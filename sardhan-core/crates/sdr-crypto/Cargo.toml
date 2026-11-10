@@ -1,0 +1,18 @@
+[package]
+name = "sdr-crypto"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+ed25519-dalek.workspace = true
+blake3.workspace = true
+bech32.workspace = true
+hex.workspace = true
+rand.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+byteorder.workspace = true
+
+[dev-dependencies]
+hex.workspace = true

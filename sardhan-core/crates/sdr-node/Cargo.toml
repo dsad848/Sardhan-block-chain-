@@ -1,0 +1,18 @@
+[package]
+name = "sdr-node"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdr-crypto = { path = "../sdr-crypto" }
+sdr-primitives = { path = "../sdr-primitives" }
+sdr-consensus = { path = "../sdr-consensus" }
+sdr-ledger = { path = "../sdr-ledger" }
+sdr-mempool = { path = "../sdr-mempool" }
+sdr-p2p = { path = "../sdr-p2p" }
+sdr-rpc = { path = "../sdr-rpc" }
+tokio.workspace = true
+log.workspace = true
+env_logger.workspace = true
+hex.workspace = true

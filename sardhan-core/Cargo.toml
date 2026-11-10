@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/sdr-crypto",
+    "crates/sdr-primitives",
+    "crates/sdr-consensus",
+    "crates/sdr-ledger",
+    "crates/sdr-mempool",
+    "crates/sdr-p2p",
+    "crates/sdr-rpc",
+    "crates/sdr-miner",
+    "crates/sdr-wallet",
+    "crates/sdr-node",
+]
+
+[workspace.package]
+version = "0.1.0"
+authors = ["Sardhan Core Protocol Engineering Group"]
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/sardhan/sardhan-chain"
+
+[workspace.dependencies]
+ed25519-dalek = { version = "2.1", default-features = false, features = ["rand_core", "fast"] }
+blake3 = { version = "1.5", features = ["rayon", "mmap"] }
+sha2 = "0.10"
+bech32 = "0.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rand = "0.8"
+tokio = { version = "1.38", features = ["full"] }
+hex = "0.4"
+thiserror = "1.0"
+byteorder = "1.5"
+log = "0.4"
+env_logger = "0.11"

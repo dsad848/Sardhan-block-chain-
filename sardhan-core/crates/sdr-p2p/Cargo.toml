@@ -1,0 +1,14 @@
+[package]
+name = "sdr-p2p"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdr-crypto = { path = "../sdr-crypto" }
+sdr-primitives = { path = "../sdr-primitives" }
+byteorder.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+log.workspace = true
+tokio.workspace = true

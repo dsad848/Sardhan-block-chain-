@@ -1,0 +1,12 @@
+[package]
+name = "sdr-miner"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdr-crypto = { path = "../sdr-crypto" }
+sdr-primitives = { path = "../sdr-primitives" }
+sdr-consensus = { path = "../sdr-consensus" }
+hex.workspace = true
+log.workspace = true

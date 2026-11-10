@@ -1,0 +1,14 @@
+[package]
+name = "sdr-primitives"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdr-crypto = { path = "../sdr-crypto" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+byteorder.workspace = true
+hex.workspace = true
+blake3.workspace = true

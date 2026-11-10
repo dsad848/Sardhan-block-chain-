@@ -1,0 +1,12 @@
+[package]
+name = "sdr-wallet"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+sdr-crypto = { path = "../sdr-crypto" }
+sdr-primitives = { path = "../sdr-primitives" }
+hex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
