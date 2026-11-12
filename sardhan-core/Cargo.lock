@@ -677,6 +677,7 @@ dependencies = [
  "sdr-crypto",
  "sdr-primitives",
  "serde",
+ "serde_json",
  "thiserror",
  "tokio",
 ]

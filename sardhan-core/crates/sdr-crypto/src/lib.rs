@@ -171,12 +171,33 @@ pub fn decode_address(address: &str) -> Result<[u8; 32], CryptoError> {
 /// branching to penalize GPU SIMD lockstep execution (SEC-HIGH-02).
 pub fn sardhan_hash(header: &[u8; 196]) -> [u8; 32] {
     let seed = hash_blake3(header);
+
+    // 8 MiB scratchpad: 131,072 chunks of 64 bytes = 2,097,152 u32 words (Issue 1 Fix)
+    const SCRATCHPAD_WORDS: usize = 131072 * 16;
+    let mut scratchpad = vec![0u32; SCRATCHPAD_WORDS];
+
+    // Initialize the 8 MiB scratchpad deterministically using BLAKE3 XOF stream
+    let mut xof = blake3::Hasher::new_keyed(&seed);
+    xof.update(b"SardhanHash_8MiB_Scratchpad_Init");
+    let mut xof_reader = xof.finalize_xof();
     
-    // 8 MiB scratchpad: 131,072 chunks of 64 bytes
-    const SCRATCHPAD_WORDS: usize = 131072 * 16; // 8 MiB in u32
-    let mut scratchpad = vec![0u32; 1024]; // lightweight initialization buffer for tests
-    
-    // Seed the initial state
+    // Fill scratchpad in 64-byte chunks
+    let mut chunk = [0u8; 64];
+    for chunk_idx in 0..131072 {
+        xof_reader.fill(&mut chunk);
+        let base = chunk_idx * 16;
+        for i in 0..16 {
+            let offset = i * 4;
+            scratchpad[base + i] = u32::from_le_bytes([
+                chunk[offset],
+                chunk[offset + 1],
+                chunk[offset + 2],
+                chunk[offset + 3],
+            ]);
+        }
+    }
+
+    // Seed the initial execution state
     let mut state = [
         u32::from_le_bytes(seed[0..4].try_into().unwrap()),
         u32::from_le_bytes(seed[4..8].try_into().unwrap()),
@@ -188,11 +209,11 @@ pub fn sardhan_hash(header: &[u8; 196]) -> [u8; 32] {
         u32::from_le_bytes(seed[28..32].try_into().unwrap()),
     ];
 
-    // Branching rounds with data-dependent shifts and S-box mixing
+    // Branching rounds with data-dependent shifts and S-box mixing across the 8 MiB memory space
     for round in 0..64 {
-        let index = (state[0] ^ state[1].rotate_left(round as u32)) as usize % scratchpad.len();
+        let index = (state[0] ^ state[1].rotate_left(round as u32)) as usize % SCRATCHPAD_WORDS;
         let val = scratchpad[index];
-        
+
         // Dynamic branch divergence
         if val & 1 == 0 {
             state[0] = state[0].wrapping_add(val ^ (round as u32));
@@ -201,7 +222,7 @@ pub fn sardhan_hash(header: &[u8; 196]) -> [u8; 32] {
             state[0] = state[0].rotate_right(7) ^ val;
             state[1] = state[1].wrapping_sub(state[3]);
         }
-        
+
         scratchpad[index] = state[0];
         state.rotate_left(1);
     }

@@ -244,6 +244,100 @@ impl Transaction {
     pub fn micro_pow_hash(&self) -> [u8; 32] {
         self.txid()
     }
+
+    /// Serialize full Segregated Witness transaction to binary wire format (Issue E Fix)
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut buf = Vec::new();
+        buf.write_u32::<LittleEndian>(self.chain_id).unwrap();
+        buf.write_u32::<LittleEndian>(self.version).unwrap();
+        buf.write_all(&self.recent_block_hash).unwrap();
+        buf.write_u64::<LittleEndian>(self.micro_pow_nonce).unwrap();
+        buf.write_u32::<LittleEndian>(self.lock_time).unwrap();
+
+        // Inputs
+        buf.write_u32::<LittleEndian>(self.inputs.len() as u32).unwrap();
+        for inp in &self.inputs {
+            buf.write_all(&inp.previous_output.txid).unwrap();
+            buf.write_u32::<LittleEndian>(inp.previous_output.vout).unwrap();
+            buf.write_u32::<LittleEndian>(inp.sequence).unwrap();
+        }
+
+        // Outputs
+        buf.write_u32::<LittleEndian>(self.outputs.len() as u32).unwrap();
+        for out in &self.outputs {
+            buf.write_u64::<LittleEndian>(out.value).unwrap();
+            buf.write_all(&out.recipient_pubkey).unwrap();
+        }
+
+        // Witnesses
+        buf.write_u32::<LittleEndian>(self.witnesses.len() as u32).unwrap();
+        for wit in &self.witnesses {
+            buf.write_u32::<LittleEndian>(wit.signature.len() as u32).unwrap();
+            buf.write_all(&wit.signature).unwrap();
+            buf.write_all(&wit.public_key).unwrap();
+        }
+
+        buf
+    }
+
+    /// Deserialize full Segregated Witness transaction from binary wire format (Issue E Fix)
+    pub fn from_bytes(bytes: &[u8]) -> Result<Self, PrimitiveError> {
+        if bytes.len() < 56 {
+            return Err(PrimitiveError::Deserialization("Transaction buffer too small".into()));
+        }
+
+        let mut r = Cursor::new(bytes);
+        let chain_id = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+        let version = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+        let mut recent_block_hash = [0u8; 32];
+        r.read_exact(&mut recent_block_hash).map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+        let micro_pow_nonce = r.read_u64::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+        let lock_time = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+
+        let in_count = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))? as usize;
+        let mut inputs = Vec::with_capacity(in_count);
+        for _ in 0..in_count {
+            let mut txid = [0u8; 32];
+            r.read_exact(&mut txid).map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+            let vout = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+            let sequence = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+            inputs.push(TxIn {
+                previous_output: OutPoint { txid, vout },
+                sequence,
+            });
+        }
+
+        let out_count = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))? as usize;
+        let mut outputs = Vec::with_capacity(out_count);
+        for _ in 0..out_count {
+            let value = r.read_u64::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+            let mut recipient_pubkey = [0u8; 32];
+            r.read_exact(&mut recipient_pubkey).map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+            outputs.push(TxOut { value, recipient_pubkey });
+        }
+
+        let wit_count = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))? as usize;
+        let mut witnesses = Vec::with_capacity(wit_count);
+        for _ in 0..wit_count {
+            let sig_len = r.read_u32::<LittleEndian>().map_err(|e| PrimitiveError::Deserialization(e.to_string()))? as usize;
+            let mut signature = vec![0u8; sig_len];
+            r.read_exact(&mut signature).map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+            let mut public_key = [0u8; 32];
+            r.read_exact(&mut public_key).map_err(|e| PrimitiveError::Deserialization(e.to_string()))?;
+            witnesses.push(TxWitness { signature, public_key });
+        }
+
+        Ok(Self {
+            chain_id,
+            version,
+            recent_block_hash,
+            micro_pow_nonce,
+            lock_time,
+            inputs,
+            outputs,
+            witnesses,
+        })
+    }
 }
 
 /// Compute BLAKE3 Merkle Root over a list of transaction IDs
@@ -306,5 +400,36 @@ mod tests {
         let tx2 = [0x02; 32];
         let root = compute_merkle_root(&[tx1, tx2]);
         assert_ne!(root, [0u8; 32]);
+    }
+
+    #[test]
+    fn test_transaction_wire_serialization_roundtrip() {
+        let tx = Transaction {
+            chain_id: SARDHAN_MAINNET_MAGIC,
+            version: 1,
+            recent_block_hash: [0x7a; 32],
+            micro_pow_nonce: 9942,
+            lock_time: 0,
+            inputs: vec![TxIn {
+                previous_output: OutPoint {
+                    txid: [0x55; 32],
+                    vout: 1,
+                },
+                sequence: 0xffffffff,
+            }],
+            outputs: vec![TxOut {
+                value: 50_000_000,
+                recipient_pubkey: [0x88; 32],
+            }],
+            witnesses: vec![TxWitness {
+                signature: vec![0x33; 64],
+                public_key: [0x44; 32],
+            }],
+        };
+
+        let bytes = tx.to_bytes();
+        let decoded = Transaction::from_bytes(&bytes).expect("transaction decoding succeeds");
+        assert_eq!(tx, decoded);
+        assert_eq!(tx.txid(), decoded.txid());
     }
 }

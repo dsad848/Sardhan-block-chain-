@@ -10,8 +10,10 @@ import {
   SARDHAN_MAINNET_MAGIC,
   bytesToHex,
   hexToBytes,
+  serializeBlockHeader,
 } from '../network/localTestnet';
 import { ed25519 } from '@noble/curves/ed25519.js';
+import { blake3 } from '@noble/hashes/blake3.js';
 import {
   Server,
   Cpu,
@@ -72,20 +74,38 @@ export const TestnetLiveCluster: React.FC = () => {
     };
 
     const blockTxs = [coinbaseTx, ...txToInclude];
+    const txids = blockTxs.map((t) => t.txid);
+    const merkleRoot = bytesToHex(blake3(new TextEncoder().encode(txids.join(''))));
+
+    const nonce = Math.floor(Math.random() * 500000) + 1000;
+    const sigHex = '00'.repeat(64);
+
+    const { headerBytes, blockHashHex } = serializeBlockHeader(
+      1,
+      tip.blockHash,
+      merkleRoot,
+      tip.timestamp + 150,
+      newHeight,
+      0x1f00ffff,
+      'PoW',
+      tip.laggingStakeModifier,
+      nonce,
+      sigHex
+    );
 
     const newBlock: TestnetBlock = {
-      headerBytesHex: '53445201' + '01'.repeat(192),
+      headerBytesHex: bytesToHex(headerBytes),
       version: 1,
       prevBlockHash: tip.blockHash,
-      merkleRoot: 'merkle_' + newHeight,
+      merkleRoot,
       timestamp: tip.timestamp + 150,
       blockHeight: newHeight,
       consensusBits: 0x1f00ffff,
       consensusType: 'PoW',
       laggingStakeModifier: tip.laggingStakeModifier,
-      powNonce: Math.floor(Math.random() * 500000) + 1000,
-      validatorSignatureHex: '00'.repeat(64),
-      blockHash: '00' + Array.from({ length: 30 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+      powNonce: nonce,
+      validatorSignatureHex: sigHex,
+      blockHash: blockHashHex,
       transactions: blockTxs,
       weight: tip.weight + 1000,
     };
@@ -105,7 +125,7 @@ export const TestnetLiveCluster: React.FC = () => {
     );
 
     addLog(
-      `[PoW MINED] Node sdrd-miner-02 mined Block #${newHeight} (50 SDR awarded). Block Hash: 0x${newBlock.blockHash.slice(0, 16)}...`
+      `[PoW MINED] Node sdrd-miner-02 mined Block #${newHeight} (50 SDR scheduled coinbase). Canonical 196-byte Hash: 0x${newBlock.blockHash.slice(0, 16)}...`
     );
   };
 
@@ -133,26 +153,48 @@ export const TestnetLiveCluster: React.FC = () => {
         },
       ],
       witnesses: [],
-      txid: 'coinstake_' + newHeight,
+      txid: bytesToHex(blake3(new TextEncoder().encode('coinstake_' + newHeight))),
       byteSize: 220,
       microPowHash: '0000_coinstake',
     };
 
     const blockTxs = [coinstakeTx, ...txToInclude];
+    const txids = blockTxs.map((t) => t.txid);
+    const merkleRoot = bytesToHex(blake3(new TextEncoder().encode(txids.join(''))));
+
+    // Sign PoS block preimage using staker private key
+    const sigBytes = ed25519.sign(
+      blake3(new TextEncoder().encode('sdr_pos_preimage_' + newHeight + tip.blockHash)),
+      hexToBytes(stakerNode.keypair.privateKeyHex)
+    );
+    const validatorSigHex = bytesToHex(sigBytes);
+
+    const { headerBytes, blockHashHex } = serializeBlockHeader(
+      1,
+      tip.blockHash,
+      merkleRoot,
+      tip.timestamp + 150,
+      newHeight,
+      0x1f00ffff,
+      'PoS',
+      tip.laggingStakeModifier,
+      0,
+      validatorSigHex
+    );
 
     const newBlock: TestnetBlock = {
-      headerBytesHex: '53445201' + '02'.repeat(192),
+      headerBytesHex: bytesToHex(headerBytes),
       version: 1,
       prevBlockHash: tip.blockHash,
-      merkleRoot: 'merkle_pos_' + newHeight,
+      merkleRoot,
       timestamp: tip.timestamp + 150,
       blockHeight: newHeight,
       consensusBits: 0x1f00ffff,
       consensusType: 'PoS',
       laggingStakeModifier: tip.laggingStakeModifier,
       powNonce: 0,
-      validatorSignatureHex: 'ed25519_valid_signature_slot_' + newHeight,
-      blockHash: '01' + Array.from({ length: 30 }, () => Math.floor(Math.random() * 16).toString(16)).join(''),
+      validatorSignatureHex: validatorSigHex,
+      blockHash: blockHashHex,
       transactions: blockTxs,
       weight: tip.weight + 1000,
     };
@@ -170,7 +212,7 @@ export const TestnetLiveCluster: React.FC = () => {
     );
 
     addLog(
-      `[PoS MINTED] Node sdrd-staker-03 verified Staking Kernel and minted Block #${newHeight}. 50 SDR awarded.`
+      `[PoS FORGED] Node sdrd-staker-03 forged Block #${newHeight} with valid Ed25519 validator signature. Canonical 196-byte Hash: 0x${newBlock.blockHash.slice(0, 16)}...`
     );
   };
 

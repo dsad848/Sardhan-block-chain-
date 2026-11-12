@@ -161,9 +161,29 @@ pub fn evaluate_pos_kernel(
     let kernel_hash = hash_blake3(&preimage);
     let base_target = compact_to_target(target_bits);
 
-    // Stake weight scaling: kernel_hash < target * value
-    // In practice, we evaluate kernel_hash scaled down by coin weight
-    hash_less_than_target(&kernel_hash, &base_target) || utxo_value > 10_000_000_000 // Test threshold
+    // Stake weight scaling: kernel_hash < target * (utxo_value / 10^8)
+    // To avoid floating point, we compute scaled target:
+    // If base_target * utxo_sdr overflows, it is capped at max 256-bit target.
+    // If utxo_value is 0 or dust, it cannot forge.
+    if utxo_value < 1000 {
+        return false;
+    }
+
+    // Multiply the 256-bit base target by utxo coin age weight (utxo_value in Sardhans / 10^8)
+    let weight_sdr = (utxo_value / 100_000_000).max(1);
+    let mut scaled_target = [0u8; 32];
+    let mut carry = 0u64;
+    for i in (0..32).rev() {
+        let prod = (base_target[i] as u64) * weight_sdr + carry;
+        scaled_target[i] = (prod & 0xff) as u8;
+        carry = prod >> 8;
+    }
+    if carry > 0 {
+        // Target saturated to 0xff...ff
+        scaled_target = [0xff; 32];
+    }
+
+    hash_less_than_target(&kernel_hash, &scaled_target)
 }
 
 #[cfg(test)]
