@@ -7,9 +7,14 @@ license.workspace = true
 [dependencies]
 sdr-crypto = { path = "../sdr-crypto" }
 sdr-primitives = { path = "../sdr-primitives" }
+sdr-consensus = { path = "../sdr-consensus" }
+sdr-ledger = { path = "../sdr-ledger" }
+sdr-mempool = { path = "../sdr-mempool" }
 byteorder.workspace = true
 thiserror.workspace = true
 serde.workspace = true
 log.workspace = true
 tokio.workspace = true
 serde_json.workspace = true
+hex.workspace = true
+rand.workspace = true

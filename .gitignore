@@ -8,3 +8,10 @@ coverage/
 !.env.example
 target/
 sardhan-core/target/
+testnet-data/
+.sdr-testnet/
+release/
+*.key
+wallet*.json
+.cargo/
+.rustup/

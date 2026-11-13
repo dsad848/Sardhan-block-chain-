@@ -9,6 +9,7 @@ sdr-crypto = { path = "../sdr-crypto" }
 sdr-primitives = { path = "../sdr-primitives" }
 sdr-consensus = { path = "../sdr-consensus" }
 serde.workspace = true
+serde_json.workspace = true
 thiserror.workspace = true
 byteorder.workspace = true
 hex.workspace = true

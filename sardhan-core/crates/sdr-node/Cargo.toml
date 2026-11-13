@@ -4,6 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
+[[bin]]
+name = "sdrd"
+path = "src/main.rs"
+
 [dependencies]
 sdr-crypto = { path = "../sdr-crypto" }
 sdr-primitives = { path = "../sdr-primitives" }
@@ -16,3 +20,5 @@ tokio.workspace = true
 log.workspace = true
 env_logger.workspace = true
 hex.workspace = true
+serde.workspace = true
+serde_json.workspace = true

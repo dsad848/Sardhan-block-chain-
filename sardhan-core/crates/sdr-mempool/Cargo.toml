@@ -7,7 +7,7 @@ license.workspace = true
 [dependencies]
 sdr-crypto = { path = "../sdr-crypto" }
 sdr-primitives = { path = "../sdr-primitives" }
+sdr-consensus = { path = "../sdr-consensus" }
 sdr-ledger = { path = "../sdr-ledger" }
 serde.workspace = true
 thiserror.workspace = true
-log.workspace = true

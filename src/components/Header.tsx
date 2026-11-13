@@ -15,34 +15,39 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-neutral-950/90 backdrop-blur-md border-b border-neutral-800 flex items-center justify-between gap-8 px-6 py-4">
-      {/* Zone 1: Single text element wordmark */}
-      <div 
-        onClick={() => setActiveTab('overview')}
-        className="cursor-pointer text-base font-bold tracking-tight text-neutral-100 flex items-center gap-2.5 whitespace-nowrap shrink-0"
+      {/* Zone 1: Single brand wordmark */}
+      <button
+        onClick={() => setActiveTab('testnet')}
+        className="text-base font-extrabold tracking-wider text-amber-400 whitespace-nowrap shrink-0 hover:text-amber-300 transition-colors"
       >
-        <span className="w-2.5 h-2.5 rounded-sm bg-amber-500 inline-block shadow-[0_0_10px_rgba(245,158,11,0.5)]"></span>
-        <span className="text-amber-400 font-extrabold tracking-wider">SARDHAN CHAIN</span>
-        <span className="text-neutral-500 font-mono text-xs">SDR · RFC-100</span>
-      </div>
+        SARDHAN CHAIN
+      </button>
 
-      {/* Zone 2: 4–5 clean single-line text navigation links */}
+      {/* Zone 2: 5 single-line text navigation links */}
       <nav className="hidden lg:flex items-center gap-6 text-sm font-medium text-neutral-400">
-        <button
-          onClick={() => setActiveTab('overview')}
-          className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
-            activeTab === 'overview' ? 'text-amber-400 font-semibold' : ''
-          }`}
-        >
-          Overview
-        </button>
         <button
           onClick={() => setActiveTab('testnet')}
           className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
-            activeTab === 'testnet' ? 'text-amber-400 font-semibold flex items-center gap-1.5' : 'flex items-center gap-1.5'
+            activeTab === 'testnet' ? 'text-amber-400 font-semibold' : ''
           }`}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span>Live Testnet</span>
+          Live Explorer
+        </button>
+        <button
+          onClick={() => setActiveTab('wallet')}
+          className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
+            activeTab === 'wallet' ? 'text-amber-400 font-semibold' : ''
+          }`}
+        >
+          SDR Wallet
+        </button>
+        <button
+          onClick={() => setActiveTab('benchmarks')}
+          className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
+            activeTab === 'benchmarks' ? 'text-amber-400 font-semibold' : ''
+          }`}
+        >
+          Benchmarks & Gates
         </button>
         <button
           onClick={() => setActiveTab('audit')}
@@ -53,44 +58,14 @@ export const Header: React.FC<HeaderProps> = ({
           Security Audit
         </button>
         <button
-          onClick={() => setActiveTab('math')}
+          onClick={() => setActiveTab('overview')}
           className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
-            activeTab === 'math' ? 'text-amber-400 font-semibold' : ''
+            !['testnet', 'wallet', 'benchmarks', 'audit'].includes(activeTab)
+              ? 'text-amber-400 font-semibold'
+              : ''
           }`}
         >
-          Consensus Math
-        </button>
-        <button
-          onClick={() => setActiveTab('risk')}
-          className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
-            activeTab === 'risk' ? 'text-amber-400 font-semibold' : ''
-          }`}
-        >
-          Risk Register
-        </button>
-        <button
-          onClick={() => setActiveTab('tokenomics')}
-          className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
-            activeTab === 'tokenomics' ? 'text-amber-400 font-semibold' : ''
-          }`}
-        >
-          Tokenomics
-        </button>
-        <button
-          onClick={() => setActiveTab('repository')}
-          className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
-            activeTab === 'repository' ? 'text-amber-400 font-semibold' : ''
-          }`}
-        >
-          Repository
-        </button>
-        <button
-          onClick={() => setActiveTab('checklist')}
-          className={`transition-colors whitespace-nowrap shrink-0 hover:text-neutral-100 ${
-            activeTab === 'checklist' ? 'text-amber-400 font-semibold' : ''
-          }`}
-        >
-          Review Checklist
+          Specifications
         </button>
       </nav>
 

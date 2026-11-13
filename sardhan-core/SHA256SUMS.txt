@@ -1,0 +1,3 @@
+be1316c29006e1a18cfacdc3675f8046f028e178184defeb0beb0154ced6ce7c  target/release/sdrd
+f2d18eee5f552f15d5506c85e03a1602aacb39ee034607a6ebaf1b118cd431ef  target/release/sdr-miner
+92f6e901a09319a309690f6a0f016f0e10f1b01e7545878d6b755d4ca2be5969  target/release/sdr-wallet

@@ -1,0 +1,48 @@
+name: Sardhan Chain CI & Security Scan
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  rust-core:
+    name: Rust Core Tests & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sardhan-core
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - name: Run unit, adversarial, fuzz, perf & 3-node integration tests
+        run: cargo test --locked --workspace
+      - name: Build release binaries
+        run: cargo build --locked --release --workspace
+      - name: Generate reproducible binary checksums
+        run: sha256sum target/release/sdrd target/release/sdr-miner target/release/sdr-wallet
+
+  security-audit:
+    name: Cargo Advisory & Vulnerability Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2
+        with:
+          working-directory: sardhan-core
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  explorer-wallet-frontend:
+    name: Explorer & Wallet Typecheck + Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build

@@ -10,7 +10,10 @@ sdr-primitives = { path = "../sdr-primitives" }
 sdr-ledger = { path = "../sdr-ledger" }
 sdr-mempool = { path = "../sdr-mempool" }
 sdr-consensus = { path = "../sdr-consensus" }
+sdr-p2p = { path = "../sdr-p2p" }
 serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 hex.workspace = true
+tokio.workspace = true
+log.workspace = true

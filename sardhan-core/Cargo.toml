@@ -15,10 +15,8 @@ members = [
 
 [workspace.package]
 version = "0.1.0"
-authors = ["Sardhan Core Protocol Engineering Group"]
 edition = "2021"
 license = "MIT"
-repository = "https://github.com/sardhan/sardhan-chain"
 
 [workspace.dependencies]
 ed25519-dalek = { version = "2.1", default-features = false, features = ["rand_core", "fast"] }

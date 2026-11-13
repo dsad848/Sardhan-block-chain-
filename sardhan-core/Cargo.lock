@@ -607,11 +607,10 @@ version = "0.1.0"
 dependencies = [
  "bech32",
  "blake3",
- "byteorder",
  "ed25519-dalek",
  "hex",
  "rand",
- "serde",
+ "sha2",
  "thiserror",
 ]
 
@@ -625,6 +624,7 @@ dependencies = [
  "sdr-crypto",
  "sdr-primitives",
  "serde",
+ "serde_json",
  "thiserror",
 ]
 
@@ -632,7 +632,7 @@ dependencies = [
 name = "sdr-mempool"
 version = "0.1.0"
 dependencies = [
- "log",
+ "sdr-consensus",
  "sdr-crypto",
  "sdr-ledger",
  "sdr-primitives",
@@ -644,11 +644,13 @@ dependencies = [
 name = "sdr-miner"
 version = "0.1.0"
 dependencies = [
+ "blake3",
  "hex",
- "log",
  "sdr-consensus",
  "sdr-crypto",
  "sdr-primitives",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -665,6 +667,8 @@ dependencies = [
  "sdr-p2p",
  "sdr-primitives",
  "sdr-rpc",
+ "serde",
+ "serde_json",
  "tokio",
 ]
 
@@ -673,8 +677,13 @@ name = "sdr-p2p"
 version = "0.1.0"
 dependencies = [
  "byteorder",
+ "hex",
  "log",
+ "rand",
+ "sdr-consensus",
  "sdr-crypto",
+ "sdr-ledger",
+ "sdr-mempool",
  "sdr-primitives",
  "serde",
  "serde_json",
@@ -688,10 +697,8 @@ version = "0.1.0"
 dependencies = [
  "blake3",
  "byteorder",
- "hex",
  "sdr-crypto",
  "serde",
- "serde_json",
  "thiserror",
 ]
 
@@ -700,14 +707,17 @@ name = "sdr-rpc"
 version = "0.1.0"
 dependencies = [
  "hex",
+ "log",
  "sdr-consensus",
  "sdr-crypto",
  "sdr-ledger",
  "sdr-mempool",
+ "sdr-p2p",
  "sdr-primitives",
  "serde",
  "serde_json",
  "thiserror",
+ "tokio",
 ]
 
 [[package]]
@@ -715,6 +725,7 @@ name = "sdr-wallet"
 version = "0.1.0"
 dependencies = [
  "hex",
+ "sdr-consensus",
  "sdr-crypto",
  "sdr-primitives",
  "serde",

@@ -7,12 +7,10 @@ license.workspace = true
 [dependencies]
 ed25519-dalek.workspace = true
 blake3.workspace = true
+sha2.workspace = true
 bech32.workspace = true
-hex.workspace = true
 rand.workspace = true
 thiserror.workspace = true
-serde.workspace = true
-byteorder.workspace = true
 
 [dev-dependencies]
 hex.workspace = true
